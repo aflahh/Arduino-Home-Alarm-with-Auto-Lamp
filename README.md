@@ -38,7 +38,7 @@ Tujuan awal dari proyek ini adalah membuat lampu otomatis yang menyala jika ada 
 
 ## Source Code
 
-```
+``` c
 #include <LiquidCrystal.h>
 #include <IRremote.h>
 
