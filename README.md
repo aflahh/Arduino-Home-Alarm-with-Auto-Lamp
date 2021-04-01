@@ -36,18 +36,24 @@ Tujuan awal dari proyek ini adalah membuat lampu otomatis yang menyala jika ada 
 - 2 Resistor 100 Ω
 - Jumper Cable
 
-## Source Code
+## Penjelasan Source Code
 
+Inisiasi library untuk LCD display dan IR sensor
 ``` c
 #include <LiquidCrystal.h>
 #include <IRremote.h>
+```
 
+Dilanjutkan dengan inisiasi untuk beberapa variabel yang dibutuhkan
+``` c
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 IRrecv irrecv(6);
 decode_results results;
 int STATUS_REMOTE = 0;
+```
 
-
+Dalam setup perintah ini dilakukan sekali saat menyalakan arduino
+``` c
 void setup() 
 {
   irrecv.enableIRIn();
@@ -61,10 +67,34 @@ void setup()
   delay(100);
   lcd.clear();
 }
+```
 
+Dalam loop perintah akan dilakukan terus menerus sampai arduino dimatikan. Dalam loop ini terbagi dalam beberapa if/else. Yang pertama yaitu jika Alarm kondisi off, kedua adalah Alarm kondisi on, yang ketiga yaitu jika status dari Alarm tidak terdeteksi, dan yang terakhir jika ditemukan input dari Remote.
+``` c
 void loop()
 {
   if (STATUS_REMOTE == 0) //status alarm off
+  {
+  ..........
+  }
+  else if (STATUS_REMOTE == 1) //status alarm on
+  {
+  .........
+  }
+  else
+  {
+  .........
+  }
+  if (irrecv.decode(&results)) //input dari remote
+  {
+  .........
+  }
+}
+```
+
+Dalam if yang pertama yaitu jika alarm kondisi off. Jika dari PIR sensor mendeteksi adanya gerakan, selanjutnya akan mencek input dari photoresistor. Jika photoresistor mendeteksi cahaya kurang, maka lampu bohlam akan menyala. Selanjutnya LCD display akan menampilkan "WELCOME HOME". Yang terakhir lampu bohlam akan dimatikan.
+``` c
+if (STATUS_REMOTE == 0) //status alarm off
   {
     if (digitalRead(7) == HIGH) //input dari pir sensor
     {
@@ -79,8 +109,11 @@ void loop()
     }
     digitalWrite(8,LOW); //output ke lampu bohlam
   }
-  
-  else if (STATUS_REMOTE == 1) //status alarm on
+```
+
+Dalam if yang kedua ketika alarm kondisi on. Jika dari PIR sensor terdeteksi gerakan, akan masuk ke dalam loop yang berhenti jika menerima input dari Remote. Dalam loop tersebut lampu bohlam akan dinyalakan, LCD menampilkan tulisan "ADA MALING!!!!" berkedip, speaker menyala berkedip, dan lampu led merah berkedip. Jika terdeteksi ada input dari Remote, loop akan berhenti lalu alarm berhenti dan berubah menjadi off.
+``` c
+else if (STATUS_REMOTE == 1) //status alarm on
   {
     if (digitalRead(7) == HIGH) //input dari pir sensor
     {
@@ -104,13 +137,19 @@ void loop()
       irrecv.resume(); //meresume penerimaan ir
     }
   }
-  
-  else
+```
+
+Dalam if yang ketiga hanya sebagai peryataan error jika status dari remote tidak ditemukan atau tidak sesuai
+``` c
+else
   {
     lcd.print("ERROR!!");
   }
-  
-  if (irrecv.decode(&results)) //input dari remote
+```
+
+Dalam if yang keempat yaitu ketika mendeteksi adanya input dari remote. Jika input dari remote sesuai yaitu tombol power, akan mengecek status alarm saat itu. Jika status alarm adalah off, maka status alarm akan diubah menjadi on, LCD menampilkan "ALARM: ON", dan led merah akan menyala sebagai tanda alarm on. Jika status alarm saat itu adalah on, maka status akan diubah menjadi off, LCD menampilkan "ALARM: OFF", dan led merah akan mati.
+``` c
+if (irrecv.decode(&results)) //input dari remote
   {
     Serial.println(results.value,DEC);
     if (results.value == 16580863) //input tombol power
@@ -132,7 +171,6 @@ void loop()
     }
     irrecv.resume(); //meresume penerimaan ir
   }
-}
 ```
 
 ## Link Tinkercad
